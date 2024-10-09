@@ -7,7 +7,7 @@
 
 using namespace std;
 
-//stateTick(delta: int, pressure: float) -> str
+//tutte le variabili relative a quota, tempo e spazio sono gestite in O(1)
 
 string stateTick(int delta,float pressure);
 
@@ -15,9 +15,18 @@ int main() {
     ifstream file("data.csv");
 
     if (!file.is_open()) {
-        cerr << "Error: Could not open the file" << endl;
+        cerr << "Error: Could not open the file!" << endl;
         return 1;
     }
+
+    ofstream writeFile("output.csv");
+    
+    if(!writeFile){
+        cerr << "Error: Could not open the file!" << endl;
+        return 1;
+    }
+
+    writeFile << "state,time,pression" << endl;
 
     string line;
     vector<pair<string, string>> list;
@@ -32,41 +41,41 @@ int main() {
     }
 
     cout << "plot '-' w l\n";
-
     for (int i = 1; i < list.size(); ++i) {
         //devono essere float
         int current = stof(list[i].second);  
         int previous = stof(list[i - 1].second); 
 
         if (!(current - previous <= 5000 && current - previous >= -5000)) {
-            cout << "Changing from " << list[i].second << " to " << list[i - 1].second << endl;
             list[i].second = list[i - 1].second; 
         }
+
+        
+
         cout << list[i].first << " " << list[i].second << endl;
 
-        float val = stof(list[i].second);
-        float initial = 81192;
 
-        val = (val - initial)/10;
-        //cout << val << endl;
-        int p = 0;
-        if((int)val == 400){
-            cout << "ok" << endl;
-            p=1;
-            
+        //paracadute
+        float pression = stof(list[i].second);
+        float initial = 81192;
+        //calcolo la quota (considero g = 10 e la densità dell'aria 1)
+        int quota = (pression - initial)/10;
+        if(quota == 400){
+            cout << "secondo paracadute" << endl;
         }
+
+        string state = stateTick(stoi(list[i].first), stof(list[i].second));
+
+        writeFile << state << "," << pression << "," << list[i].first << endl;  
+
+
     }
 
     cout << "e\n\n";
 
-    // string result;
-    // for(int i = 0;i < list.size(); i++){
-    //     float val = stof(list[i].second);
-    //     result = stateTick(stoi(list[i].first),val);
-    //     cout << result << endl;
-    // }
     
     file.close();
+    writeFile.close();
 
     return 0;
 }
@@ -81,9 +90,10 @@ string stateTick(int delta, float pressure){
     }else if(delta >= 378262 && 800000 > delta){
         return "A terra";
     }else{
+        //non è specificato il nome dell'evento in questo caso
         return "";
     }
-    if(delta == 282445){
+    if(delta == 268159){
         return "Paracadute azionato";
     }
 }
