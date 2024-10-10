@@ -1,5 +1,5 @@
 ### Requirements
-To install Gnuplot (in linux)
+To install Gnuplot (in debian-based distributions in linux)
 ```bash
 sudo apt-get install gnuplot
 ```
