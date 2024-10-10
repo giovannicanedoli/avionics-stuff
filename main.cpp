@@ -96,6 +96,10 @@ string stateTick(int delta, float pressure){
     }else if(delta >= 252413 && 262424 > delta){
         return "Lancio";
     }else if(delta >= 262424 && 273865 > delta){
+        //all'apogeo aziono il paracadute
+        if(delta == 268159){
+            cout << "Paracadute azionato" << endl;
+        }
         return "Apogeo";
     }else if(delta >= 378262 && 800000 > delta){
         return "A terra";
@@ -103,8 +107,5 @@ string stateTick(int delta, float pressure){
         //non è specificato il nome dell'evento in questo caso
         return "";
     }
-    //all'apogeo aziono il paracadute
-    if(delta == 268159){
-        return "Paracadute azionato";
-    }
+    
 }

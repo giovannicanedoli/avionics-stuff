@@ -1,3 +1,4 @@
+#Codice per leggere i dati in input
 import csv
 def main(nome_file):
     # apri il csv e printa i valori
