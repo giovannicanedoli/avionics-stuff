@@ -1,92 +1,72 @@
 import csv
 import matplotlib.pyplot as plt
 import numpy as np
+from typing import List
 
-# Function to clean up the data and test stateTick for each data point
-def clenup(namefile):
-    # Read data from CSV
+def cleanup(namefile: str) -> None:
+    # Leggo i dati dal CSV
     with open(namefile) as f:
         reader = csv.reader(f)
         data = list(reader)
 
-    # Convert data to numerical format (assuming data is in string format)
+    # Converti i dati in formato numerico (supponendo che i dati siano in formato stringa)
     data = [[float(x), float(y)] for x, y in data]
+    data = np.array(data)
+    print(data)
 
-    # Initialize variables
     len_data = len(data)
-    data2 = []
-    results = []  # List to store the results
+    results: List[str] = []  # Lista per memorizzare i risultati
 
-    # Apply pressure difference condition and filter data
     for i in range(1, len_data):
-        # Check for difference of exactly ±7000 Pascal
-        if data[i][1] - data[i-1][1] not in range(-7000, 7000):
+        # Controlla la differenza di esattamente ±7000 Pascal
+        if (data[i][1] - data[i-1][1]) not in range(-5000, 5000):
             data[i][1] = data[i-1][1]
 
-        # Append filtered x and y values
-        data2.append([data[i][0], data[i][1]])
+        delta: float = data[i][0]
+        pressure: float = data[i][1]
+        result: str = stateTick(delta, pressure)
+        results.append(result)  # Memorizza il risultato per uso o analisi futura
 
-    # Call stateTick for each data point and accumulate results
-    for i in range(len(data)):
-        delta = data[i][0]
-        pressure = data[i][1]
-        result = stateTick(delta, pressure)
-        results.append(result)
+        # Paracadute
+        pression: float = pressure
+        initial: float = 81192
+        # Calcolo la quota (considero g = 10 e la densità dell'aria 1)
+        # Utilizzo la legge di Stevino
+        quota: int = int((pression - initial) / 10)
+        if quota == 400:
+            print("secondo paracadute")
 
-    # Print all the results at once
-    print(results)
+        # Scrivo in output per far funzionare gnuplot
+        print(f"{data[i][0]} {data[i][1]}")
 
-    # Separate the filtered data into x and y for plotting
-    x_vals = [row[0] for row in data2]
-    y_vals = [row[1] for row in data2]
+    x_vals = [row[0] for row in data]
+    y_vals = [row[1] for row in data]
 
-    # Plot the filtered data
-    plt.figure(figsize=(10, 6))
-
-    # Plot the data with different background colors for each state
-    plot_with_intervals(x_vals, y_vals)
-
-    plt.xlabel('Delta (X values)')
-    plt.ylabel('Pressure (Y values)')
-    plt.title('Pressure Plot with State-Specific Coloring')
+    plt.plot(x_vals, y_vals)
+    plt.xlabel('Delta (Valori X)')
+    plt.ylabel('Pressione (Valori Y)')
+    plt.title('Grafico')
     plt.grid(True)
     plt.show()
 
-# Function to determine the state based on delta and pressure
-def stateTick(delta, pressure):
-    if 5197 <= delta < 24000:
-        return "su rampa"
-    elif 24000 <= delta < 26000:
-        return "lancio"
-    elif 26000 <= delta < 27000:
-        return "apogeo"
-    elif 37000 <= delta < 706009:
-        return "a terra"
+def stateTick(delta: int, pressure: float) -> str:
+    # Differenzia gli stati in base agli intervalli specificati
+    if 46478 <= delta < 252413:
+        return "Su rampa"
+    elif 252413 <= delta < 262424:
+        return "Lancio"
+    elif 262424 <= delta < 273865:
+        return "Apogeo"
+    elif 378262 <= delta < 800000:
+        return "A terra"
     else:
-        return 'altro'
+        # Non è specificato il nome dell'evento in questo caso
+        return ""
 
-# Function to plot the intervals with different colors
-def plot_with_intervals(x_vals, y_vals):
-    plt.plot(x_vals, y_vals, color='black')  # Plot the data line
+    # Azione specifica all'apogeo
+    if delta == 268159:
+        return "Paracadute azionato"
 
-    # Define intervals with corresponding colors
-    intervals = [
-        (5197, 24000, 'lightblue', 'su rampa'),
-        (24000, 26000, 'green', 'lancio'),
-        (26000, 27000, 'yellow', 'apogeo'),
-        (37000, 706009, 'red', 'a terra')
-    ]
-
-    x_vals = np.array(x_vals)  # Convert to NumPy array for easier boolean operations
-
-    # Fill background colors for each interval
-    for start, end, color, label in intervals:
-        mask = (x_vals >= start) & (x_vals < end)  # Create boolean mask
-        plt.fill_between(x_vals, y_vals, where=mask, color=color, alpha=0.3, label=label)
-
-    plt.legend()
-
-# Main function to run the cleanup process and testing
+# Funzione principale per eseguire il processo di pulizia e test
 if __name__ == '__main__':
-    # Call cleanup function with actual CSV data
-    clenup('data.csv')
+    cleanup('data.csv')
